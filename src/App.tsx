@@ -7,7 +7,7 @@ import "./App.css";
 function App() {
   const leftRef = useRef<DatabaseReference | null>(null);
   const [left, setLeft] = useState<number>(0);
-  const leftValueRef = useRef(left); // Ссылка на актуальное значение left
+  const leftValueRef = useRef(left);
 
   const updateLeftValue = (newValue: number) => {
     const dbRef = ref(db);
