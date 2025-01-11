@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { db } from "./firebase/firebaseConfig";
+import { db } from "../firebase/firebaseConfig";
 import { ref, update, onValue, DatabaseReference, get } from "firebase/database";
-import Player from "./Player/Player";
+import Player from "../Player/Player";
 import "./App.css";
+import Canvas from "../Canvas/Canvas";
 
 function App() {
   const leftRef = useRef<DatabaseReference | null>(null);
@@ -48,11 +49,12 @@ function App() {
 
   return (
     <div className="App">
-      <div className="road">
+      {/* <div className="road">
         <Player left={left} />
       </div>
       <button onClick={increaseLeft}>Add</button>
-      <div>leftValue: {left}</div>
+      <div>leftValue: {left}</div> */}
+      <Canvas />
     </div>
   );
 }
