@@ -1,19 +1,58 @@
-import React from "react";
-import logo from "./logo.svg";
+import React, { useEffect, useRef, useState } from "react";
+import { db } from "./firebase/firebaseConfig";
+import { ref, update, onValue, DatabaseReference, get } from "firebase/database";
+import Player from "./Player/Player";
 import "./App.css";
 
 function App() {
+  const leftRef = useRef<DatabaseReference | null>(null);
+  const [left, setLeft] = useState<number>(0);
+  const leftValueRef = useRef(left); // Ссылка на актуальное значение left
+
+  const updateLeftValue = (newValue: number) => {
+    const dbRef = ref(db);
+    update(dbRef, { left: newValue });
+  };
+
+  const increaseLeft = () => {
+    const newValue = leftValueRef.current + 1;
+    updateLeftValue(newValue);
+  };
+
+  useEffect(() => {
+    leftValueRef.current = left;
+  }, [left]);
+
+  useEffect(() => {
+    leftRef.current = ref(db, "left");
+    if (!leftRef.current) return;
+
+    const unsubscribe = onValue(leftRef.current, (snapshot) => {
+      const leftValue = snapshot.val();
+      setLeft(leftValue);
+    });
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const isRight = event.key == "ArrowRight";
+      if (!isRight) return;
+      increaseLeft();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      unsubscribe();
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a className="App-link" href="https://reactjs.org" target="_blank" rel="noopener noreferrer">
-          Learn React
-        </a>
-      </header>
+      <div className="road">
+        <Player left={left} />
+      </div>
+      <button onClick={increaseLeft}>Add</button>
+      <div>leftValue: {left}</div>
     </div>
   );
 }
