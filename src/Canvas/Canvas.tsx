@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import "./Canvas.css";
-import Player from "../canvas-entities/player";
+import Player from "../canvas-entities/Player";
 
 function draw(ctx: CanvasRenderingContext2D) {
   const player = new Player(ctx);

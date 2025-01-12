@@ -1,38 +1,40 @@
-import { db } from "../firebase/firebaseConfig";
-import { ref, update, onValue, Unsubscribe } from "firebase/database";
+import { DataSnapshot } from "firebase/database";
+import Entity from "./Entity";
 
-class Player {
-  private unsubscribe: Unsubscribe | null = null;
-  private handleKeyDown: (event: KeyboardEvent) => void;
+class Player extends Entity {
+  private currentX: number;
+  private currentY: number;
 
   constructor(private ctx: CanvasRenderingContext2D, private x = 0, private y = 0) {
-    this.handleKeyDown = this.onKeyDown.bind(this);
-    this.init();
+    super(
+      "player",
+      (snapshot: DataSnapshot) => {
+        const playerData = snapshot.val();
+
+        if (playerData.position.x !== undefined) {
+          this.x = playerData.position.x;
+        }
+        if (playerData.position.y !== undefined) {
+          this.y = playerData.position.y;
+        }
+      },
+      {
+        "ArrowRight": () => this.move("x", "+"),
+        "ArrowDown": () => this.move("y", "+"),
+        "ArrowLeft": () => this.move("x", "-"),
+        "ArrowUp": () => this.move("y", "-"),
+      }
+    );
+
+    this.currentX = this.x;
+    this.currentY = this.y;
   }
 
-  private init() {
-    const leftRef = ref(db, "left");
-    this.unsubscribe = onValue(leftRef, (snapshot) => {
-      this.x = snapshot.val() || 0;
-    });
+  private move(axis: "x" | "y", direction: "+" | "-") {
+    const delta = direction === "+" ? 1 : -1;
+    this[axis] += delta;
 
-    window.addEventListener("keydown", this.handleKeyDown);
-  }
-
-  private updateLeftValue(newValue: number) {
-    const dbRef = ref(db);
-    update(dbRef, { left: newValue });
-  }
-
-  private increaseLeft() {
-    const newValue = this.x + 1;
-    this.updateLeftValue(newValue);
-  }
-
-  private onKeyDown(event: KeyboardEvent) {
-    if (event.key === "ArrowRight") {
-      this.increaseLeft();
-    }
+    this.updateValue("player/position", axis, this[axis]);
   }
 
   draw() {
@@ -45,15 +47,6 @@ class Player {
 
   update() {
     if (this.x > this.ctx.canvas.width) this.x = 0;
-  }
-
-  destroy() {
-    if (this.unsubscribe) {
-      this.unsubscribe();
-      this.unsubscribe = null;
-    }
-
-    window.removeEventListener("keydown", this.handleKeyDown);
   }
 }
 
