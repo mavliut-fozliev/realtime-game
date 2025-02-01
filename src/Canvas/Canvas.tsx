@@ -7,9 +7,11 @@ import Context from "../Context/Context";
 
 function createEntities(ctx: Context) {
   const room = new Room(ctx);
-  const cube = new Cube(ctx);
+  const cube = new Cube(ctx, 0, 200);
+  const cube2 = new Cube(ctx, -100, 200);
+  const cube3 = new Cube(ctx, -200, 200);
 
-  return [room, cube];
+  return [room, cube, cube2, cube3];
 }
 
 function handleEvents(entities: Entity[]) {

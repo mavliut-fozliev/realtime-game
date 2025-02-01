@@ -2,13 +2,11 @@ import Context from "../Context/Context";
 import Entity from "./Entity";
 
 export default class Cube extends Entity {
-  constructor(protected ctx: Context) {
+  constructor(protected ctx: Context, protected x: number, protected y: number) {
     super(ctx);
   }
 
   // entity center position
-  private x = 100;
-  private y = 200;
 
   private width = 100;
   private speed = 2;
