@@ -1,42 +1,66 @@
 import React, { useEffect } from "react";
 import "./Canvas.css";
-import Player from "../canvas-entities/Player";
+import Cube from "../Entities/Cube";
+import Entity from "../Entities/Entity";
+import Room from "../Entities/Room";
+import Context from "../Context/Context";
 
-function draw(ctx: CanvasRenderingContext2D) {
-  const player = new Player(ctx);
+function createEntities(ctx: Context) {
+  const room = new Room(ctx);
+  const cube = new Cube(ctx);
 
-  function animate() {
-    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-
-    // update
-    player.update();
-
-    // draw
-    player.draw();
-
-    requestAnimationFrame(animate);
-  }
-
-  animate();
+  return [room, cube];
 }
 
-function resizeCanvas(ctx: CanvasRenderingContext2D) {
+function handleEvents(entities: Entity[]) {
+  const handleKeydown = (keyboardEvent: KeyboardEvent) => {
+    entities.forEach((entity) => entity.handleKeydown(keyboardEvent));
+  };
+  window.addEventListener("keydown", handleKeydown);
+
+  const handleKeyup = (keyboardEvent: KeyboardEvent) => {
+    entities.forEach((entity) => entity.handleKeyup(keyboardEvent));
+  };
+  window.addEventListener("keyup", handleKeyup);
+}
+
+function updateMethods(entities: Entity[], time: number) {
+  entities.forEach((entity) => entity.update(time));
+}
+
+function drawMethods(entities: Entity[]) {
+  entities.forEach((entity) => entity.draw());
+}
+
+function animate(time: number, ctx: Context, entities: Entity[]) {
+  ctx.clearScreen();
+
+  updateMethods(entities, time);
+  drawMethods(entities);
+
+  requestAnimationFrame((time) => animate(time, ctx, entities));
+}
+
+function start(ctx: Context) {
+  const entities = createEntities(ctx);
+  handleEvents(entities);
+
+  requestAnimationFrame((time) => animate(time, ctx, entities));
+}
+
+function resizeCanvas(ctx: Context) {
   ctx.canvas.width = window.innerWidth;
   ctx.canvas.height = window.innerHeight;
 }
 
 function Canvas() {
   useEffect(() => {
-    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+    const ctx = new Context();
 
     resizeCanvas(ctx);
     window.addEventListener("resize", () => resizeCanvas(ctx));
 
-    draw(ctx);
+    start(ctx);
   }, []);
 
   return <canvas id="canvas"></canvas>;
